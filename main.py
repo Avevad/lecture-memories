@@ -1,10 +1,24 @@
+import os
+
 import cv2
 import numpy as np
 import matplotlib.pyplot as mpl
 import sys
 
+
+def usage():
+    print(f"Usage: {sys.argv[0]} <FILE> <SHOTS_COUNT>")
+
+
+if len(sys.argv) != 3 or not sys.argv[2].isnumeric():
+    usage()
+    exit(-1)
+
 FILE_NAME = sys.argv[1]
 SELECTION_SIZE = int(sys.argv[2])
+OUTPUT_FOLDER = "output/"
+OUTPUT_PREFIX = "frame"
+OUTPUT_POSTFIX = ".png"
 DEBUG = len(sys.argv) > 3
 FW, FH = 640, 480
 CROP = 0.1
@@ -107,7 +121,7 @@ def process_video(video):
     bs = []
     f = 0
     while True:
-        print(f, frames)
+        print("%.2f%%" % (f / frames * 100))
         video.set(cv2.CAP_PROP_POS_FRAMES, f + SKIP)
         ret, frame = video.read()
         f += SKIP + 1
@@ -160,6 +174,9 @@ def smooth(cs):
 
 
 track = cv2.VideoCapture(FILE_NAME)
+if not track.isOpened():
+    print(f"error: file {FILE_NAME} not found")
+    exit(-1)
 comps, boards = process_video(track)
 smoothed = comps
 for s in range(SMOOTHING_ITERS):
@@ -188,10 +205,12 @@ for i, x in comps:
 comps = ncomps
 comps = sorted(comps, key=lambda t: t[1])
 comps = list(reversed(comps))
+if not os.path.exists(OUTPUT_FOLDER):
+    os.mkdir(OUTPUT_FOLDER)
 for i in range(min(SELECTION_SIZE, len(comps))):
     j, comp = comps[i]
     track.set(cv2.CAP_PROP_POS_FRAMES, (SKIP + 1) * j + SKIP)
     ret, cframe = track.read()
     cframe = cframe[boards[j][1]:boards[j][3], boards[j][0]:boards[j][2]]
     if ret:
-        cv2.imwrite(f"output/frame{i}.png", cframe)
+        cv2.imwrite(f"{OUTPUT_FOLDER}{OUTPUT_PREFIX}{i}{OUTPUT_POSTFIX}", cframe)
