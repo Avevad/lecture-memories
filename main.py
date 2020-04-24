@@ -122,8 +122,9 @@ def process_video(video):
     ys = []
     bs = []
     f = 0
+    print()
     while True:
-        print("\rProcessing... %.2f%%" % (f / frames * 100), end="")
+        print("\033[1E\033[1FProcessing... %.2f%%" % (f / frames * 100), end="")
         video.set(cv2.CAP_PROP_POS_FRAMES, f + SKIP)
         ret, frame = video.read()
         f += SKIP + 1
