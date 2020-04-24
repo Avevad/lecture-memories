@@ -124,7 +124,7 @@ def process_video(video):
     f = 0
     print()
     while True:
-        print("\033[1E\033[1FProcessing... %.2f%%" % (f / frames * 100), end="")
+        print("\r\033[1E\033[1FProcessing... %.2f%%" % (f / frames * 100), end="")
         video.set(cv2.CAP_PROP_POS_FRAMES, f + SKIP)
         ret, frame = video.read()
         f += SKIP + 1
@@ -159,7 +159,7 @@ def process_video(video):
             mpl.plot(xs, ys, color="blue")
             mpl.draw()
             mpl.pause(0.001)
-        print()
+    print()
     return ys, bs
 
 
