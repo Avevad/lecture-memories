@@ -7,19 +7,20 @@ import sys
 
 
 def usage():
-    print(f"Usage: {sys.argv[0]} <FILE> <SHOTS_COUNT>")
+    print(f"Usage: {sys.argv[0]} <FILE> <SHOTS_COUNT> <INVERT>")
 
 
-if len(sys.argv) != 3 or not sys.argv[2].isnumeric():
+if len(sys.argv) != 4 or not sys.argv[2].isnumeric():
     usage()
     exit(-1)
 
 FILE_NAME = sys.argv[1]
 SELECTION_SIZE = int(sys.argv[2])
+INVERT = sys.argv[3].lower() == "true"
 OUTPUT_FOLDER = "output/"
 OUTPUT_PREFIX = "frame"
 OUTPUT_POSTFIX = ".png"
-DEBUG = len(sys.argv) > 3
+DEBUG = len(sys.argv) > 4
 FW, FH = 640, 480
 CROP = 0.1
 SMOOTHING = 20
@@ -76,7 +77,7 @@ def remove_person(frame, px1, py1, px2, py2):
 
 def get_blackboard_completeness(removed, px1, py1, px2, py2, bx, by, bw, bh):
     gray = cv2.cvtColor(removed, cv2.COLOR_BGR2GRAY)
-    ret, baw_notes = cv2.threshold(gray, NOTES_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
+    ret, baw_notes = cv2.threshold(gray, NOTES_THRESHOLD, 255, cv2.THRESH_BINARY if INVERT else cv2.THRESH_BINARY_INV)
 
     cv2.rectangle(baw_notes, (px1, py1), (px2, py2), (255, 255, 255), cv2.FILLED)
 
@@ -97,7 +98,7 @@ def get_frame_params(frame):
     removed = remove_person(frame, px1, py1, px2, py2)
 
     gray = cv2.cvtColor(removed, cv2.COLOR_BGR2GRAY)
-    ret, baw_board = cv2.threshold(gray, BOARD_THRESHOLD, 255, cv2.THRESH_BINARY_INV)
+    ret, baw_board = cv2.threshold(gray, BOARD_THRESHOLD, 255, cv2.THRESH_BINARY if INVERT else cv2.THRESH_BINARY_INV)
     bx, by, bw, bh = get_blackboard_bounds(baw_board)
     bxc = by + int(CROP * bw)
     byc = bx + int(CROP * bh)
